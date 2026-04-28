@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0e0600">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>תמר סקאן</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --gold: #c8860a;
+    --gold-light: #f0a820;
+    --dark: #0e0600;
+    --surface: #1c0d00;
+    --surface2: #2a1200;
+    --text: #f5e6c8;
+    --text-muted: #9a7a50;
+    --success: #4caf50;
+    --info: #4a9eff;
+    --radius: 16px;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+width: 100%;
+height: 100%;
+overflow: hidden;
+background: #0e0600 !important;
+}
+
+body {
+color: #f5e6c8;
+font-family: ‘Heebo’, -apple-system, BlinkMacSystemFont, sans-serif;
+-webkit-font-smoothing: antialiased;
+position: fixed;
+inset: 0;
+}
+
+.screen {
+display: none;
+flex-direction: column;
+position: absolute;
+inset: 0;
+background: #0e0600;
+}
+.screen.active { display: flex; }
+
+/* ─── SPLASH ─── */
+#splash {
+background: radial-gradient(ellipse at 50% 30%, #3d1a00 0%, #0e0600 70%);
+align-items: center;
+justify-content: center;
+padding: 20px;
+}
+.logo-wrap { text-align: center; margin-bottom: 40px; }
+.logo-icon {
+font-size: 80px;
+line-height: 1;
+margin-bottom: 16px;
+animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-10px); }
+}
+.logo-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 52px;
+letter-spacing: 4px;
+background: linear-gradient(135deg, #f0a820, #c8860a);
+-webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+.logo-sub {
+color: #9a7a50;
+font-size: 13px;
+letter-spacing: 2px;
+margin-top: 6px;
+}
+.logo-tagline {
+color: #f5e6c8;
+font-size: 15px;
+margin-top: 24px;
+max-width: 280px;
+line-height: 1.5;
+}
+.splash-btn {
+background: linear-gradient(135deg, #f0a820, #c8860a);
+color: #0e0600;
+border: none;
+padding: 18px 44px;
+border-radius: 50px;
+font-family: inherit;
+font-size: 17px;
+font-weight: 800;
+cursor: pointer;
+box-shadow: 0 8px 32px rgba(200,134,10,0.4);
+-webkit-appearance: none;
+appearance: none;
+}
+.splash-btn:active { transform: scale(0.96); }
+
+/* ─── CAMERA ─── */
+#camera { background: #000; }
+
+#video {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.scan-frame {
+position: absolute;
+top: 50%;
+left: 50%;
+width: 80vw;
+max-width: 340px;
+height: 80vw;
+max-height: 340px;
+margin-top: -40vw;
+margin-left: -40vw;
+pointer-events: none;
+}
+@media (min-width: 425px) {
+.scan-frame { margin-top: -170px; margin-left: -170px; }
+}
+.scan-frame .corner {
+position: absolute;
+width: 32px;
+height: 32px;
+border: 3px solid #f0a820;
+}
+.corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+.corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+.corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+.corner.br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+.scan-line {
+position: absolute;
+left: 0;
+right: 0;
+height: 2px;
+background: linear-gradient(to left, transparent, #f0a820, transparent);
+animation: scanAnim 2.5s linear infinite;
+}
+@keyframes scanAnim {
+0% { top: 0; }
+100% { top: calc(100% - 2px); }
+}
+
+.cam-top-bar {
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+padding: 12px 14px;
+padding-top: calc(12px + env(safe-area-inset-top, 0px));
+background: linear-gradient(to bottom, rgba(14,6,0,0.85), transparent);
+display: flex;
+align-items: center;
+z-index: 10;
+}
+.cam-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 20px;
+letter-spacing: 3px;
+color: #f0a820;
+flex: 1;
+text-align: center;
+}
+.cam-btn {
+background: rgba(255,255,255,0.15);
+border: 1px solid rgba(255,255,255,0.25);
+color: white;
+border-radius: 50px;
+padding: 8px 14px;
+font-family: inherit;
+font-size: 12px;
+font-weight: 600;
+cursor: pointer;
+-webkit-backdrop-filter: blur(8px);
+backdrop-filter: blur(8px);
+-webkit-appearance: none;
+appearance: none;
+}
+
+.cam-hint {
+position: absolute;
+bottom: 130px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(14,6,0,0.85);
+border: 1px solid rgba(200,134,10,0.3);
+border-radius: 50px;
+padding: 8px 18px;
+font-size: 12px;
+color: #f5e6c8;
+-webkit-backdrop-filter: blur(8px);
+backdrop-filter: blur(8px);
+z-index: 10;
+text-align: center;
+max-width: 90%;
+}
+.cam-hint b { color: #f0a820; }
+
+.cam-bottom-bar {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+padding: 16px;
+padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+background: linear-gradient(to top, rgba(14,6,0,0.92), transparent);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 10;
+}
+
+.capture-btn {
+width: 76px;
+height: 76px;
+border-radius: 50%;
+background: linear-gradient(135deg, #f0a820, #c8860a);
+border: 4px solid rgba(255,255,255,0.3);
+cursor: pointer;
+box-shadow: 0 0 0 2px #f0a820, 0 8px 24px rgba(200,134,10,0.5);
+font-size: 28px;
+-webkit-appearance: none;
+appearance: none;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.capture-btn:active { transform: scale(0.92); }
+
+/* ─── RESULT ─── */
+#result { background: #0e0600; }
+
+.top-bar {
+background: #1c0d00;
+padding: 14px 16px;
+padding-top: calc(14px + env(safe-area-inset-top, 0px));
+display: flex;
+align-items: center;
+border-bottom: 1px solid rgba(200,134,10,0.2);
+flex-shrink: 0;
+}
+.top-bar-title {
+font-size: 17px;
+font-weight: 700;
+color: #f0a820;
+flex: 1;
+text-align: center;
+margin: 0 8px;
+}
+.icon-btn {
+background: rgba(200,134,10,0.1);
+border: 1px solid rgba(200,134,10,0.3);
+color: #f0a820;
+width: 36px;
+height: 36px;
+border-radius: 50%;
+font-size: 16px;
+cursor: pointer;
+-webkit-appearance: none;
+appearance: none;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.result-img-wrap {
+position: relative;
+background: #000;
+height: 28%;
+flex-shrink: 0;
+overflow: hidden;
+}
+#result-img {
+width: 100%;
+height: 100%;
+object-fit: contain;
+display: block;
+}
+
+.result-body {
+flex: 1;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+padding: 16px;
+}
+
+.object-name-card {
+background: linear-gradient(135deg, rgba(200,134,10,0.15), rgba(200,134,10,0.05));
+border: 1px solid rgba(200,134,10,0.3);
+border-radius: 16px;
+padding: 16px;
+margin-bottom: 16px;
+text-align: center;
+}
+.object-icon { font-size: 36px; margin-bottom: 8px; }
+.object-name {
+font-size: 22px;
+font-weight: 800;
+color: #f0a820;
+margin-bottom: 4px;
+}
+.object-desc {
+font-size: 13px;
+color: #9a7a50;
+}
+
+.stat-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-bottom: 16px;
+}
+.stat-card {
+background: #1c0d00;
+border: 1px solid rgba(200,134,10,0.2);
+border-radius: 14px;
+padding: 14px;
+text-align: center;
+}
+.stat-icon { font-size: 22px; margin-bottom: 6px; }
+.stat-label {
+font-size: 11px;
+color: #9a7a50;
+font-weight: 600;
+margin-bottom: 6px;
+letter-spacing: 0.5px;
+}
+.stat-value {
+font-size: 24px;
+font-weight: 900;
+color: #f5e6c8;
+line-height: 1;
+}
+.stat-unit {
+font-size: 11px;
+color: #9a7a50;
+margin-top: 4px;
+}
+
+.ripeness-card {
+background: #1c0d00;
+border: 1px solid rgba(200,134,10,0.2);
+border-radius: 14px;
+padding: 14px;
+margin-bottom: 16px;
+}
+.ripeness-header {
+display: flex;
+align-items: center;
+margin-bottom: 12px;
+}
+.ripeness-title {
+font-size: 13px;
+color: #9a7a50;
+font-weight: 600;
+flex: 1;
+}
+.ripeness-score {
+font-size: 20px;
+font-weight: 900;
+color: #f0a820;
+}
+.ripeness-bar {
+height: 10px;
+background: linear-gradient(to left, #c8860a, #7aaf2a, #2d6b1a);
+border-radius: 99px;
+position: relative;
+margin-bottom: 8px;
+}
+.ripeness-marker {
+position: absolute;
+top: -4px;
+width: 18px;
+height: 18px;
+background: #f5e6c8;
+border: 3px solid #0e0600;
+border-radius: 50%;
+box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.ripeness-labels {
+display: flex;
+justify-content: space-between;
+font-size: 10px;
+color: #9a7a50;
+}
+.ripeness-desc {
+font-size: 13px;
+color: #f5e6c8;
+margin-top: 10px;
+text-align: center;
+}
+
+.info-card {
+background: rgba(74,158,255,0.08);
+border: 1px solid rgba(74,158,255,0.25);
+border-radius: 14px;
+padding: 12px 14px;
+margin-bottom: 16px;
+font-size: 12px;
+color: #f5e6c8;
+line-height: 1.5;
+}
+.info-card-title {
+color: #4a9eff;
+font-weight: 700;
+margin-bottom: 6px;
+font-size: 13px;
+}
+
+.confidence-row {
+margin-bottom: 16px;
+}
+.confidence-bar {
+background: #1c0d00;
+border-radius: 99px;
+height: 5px;
+overflow: hidden;
+margin-top: 6px;
+}
+.confidence-fill {
+height: 100%;
+background: linear-gradient(to left, #f0a820, #c8860a);
+border-radius: 99px;
+}
+.confidence-label {
+font-size: 11px;
+color: #9a7a50;
+margin-bottom: 4px;
+display: flex;
+justify-content: space-between;
+}
+
+.action-row {
+display: flex;
+gap: 10px;
+margin-top: 8px;
+margin-bottom: 16px;
+}
+.action-btn {
+flex: 1;
+background: linear-gradient(135deg, #f0a820, #c8860a);
+color: #0e0600;
+border: none;
+padding: 14px;
+border-radius: 14px;
+font-family: inherit;
+font-size: 14px;
+font-weight: 800;
+cursor: pointer;
+-webkit-appearance: none;
+appearance: none;
+}
+.action-btn:active { transform: scale(0.98); }
+.action-btn.secondary {
+background: #1c0d00;
+color: #f0a820;
+border: 1px solid rgba(200,134,10,0.3);
+}
+
+/* ─── LOADING ─── */
+#loading-overlay {
+position: fixed;
+inset: 0;
+background: rgba(14,6,0,0.95);
+z-index: 200;
+display: none;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+-webkit-backdrop-filter: blur(6px);
+backdrop-filter: blur(6px);
+}
+#loading-overlay.show { display: flex; }
+.spinner {
+width: 60px;
+height: 60px;
+border: 3px solid rgba(200,134,10,0.2);
+border-top-color: #f0a820;
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+color: #f5e6c8;
+font-size: 16px;
+margin-bottom: 6px;
+font-weight: 600;
+}
+.loading-sub { color: rgba(200,134,10,0.7); font-size: 12px; }
+
+/* ─── TOAST ─── */
+#toast {
+position: fixed;
+bottom: 100px;
+left: 50%;
+transform: translateX(-50%);
+background: #2a1200;
+border: 1px solid rgba(200,134,10,0.3);
+border-radius: 50px;
+padding: 10px 20px;
+font-size: 13px;
+color: #f5e6c8;
+z-index: 300;
+opacity: 0;
+transition: opacity 0.3s;
+pointer-events: none;
+max-width: 90%;
+text-align: center;
+}
+#toast.show { opacity: 1; }
+
+canvas { display: none; }
+</style>
+
+</head>
+<body>
+
+<div class="screen active" id="splash">
+  <div class="logo-wrap">
+    <div class="logo-icon">🌴</div>
+    <div class="logo-title">תמר סקאן</div>
+    <div class="logo-sub">AI OBJECT ANALYZER</div>
+    <div class="logo-tagline">צלם תמר או כל אובייקט וקבל ניתוח מלא של מידות, משקל ובשלות</div>
+  </div>
+  <button class="splash-btn" onclick="startCamera()">🎥 התחל סריקה</button>
+</div>
+
+<div class="screen" id="camera">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
+
+  <div class="scan-frame">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="scan-line"></div>
+  </div>
+
+  <div class="cam-top-bar">
+    <button class="cam-btn" onclick="exitCamera()">← יציאה</button>
+    <div class="cam-title">TAMAR SCAN</div>
+    <button class="cam-btn" onclick="flipCamera()">⟳</button>
+  </div>
+
+  <div class="cam-hint">
+    מקם את <b>האובייקט</b> במרכז המסגרת
+  </div>
+
+  <div class="cam-bottom-bar">
+    <button class="capture-btn" onclick="capture()">📸</button>
+  </div>
+</div>
+
+<div class="screen" id="result">
+  <div class="top-bar">
+    <button class="icon-btn" onclick="goCamera()">←</button>
+    <div class="top-bar-title">תוצאות ניתוח</div>
+    <button class="icon-btn" onclick="goSplash()">🏠</button>
+  </div>
+
+  <div class="result-img-wrap">
+    <img id="result-img" src="" alt="">
+  </div>
+
+  <div class="result-body" id="resultBody"></div>
+</div>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">מנתח את האובייקט...</div>
+  <div class="loading-sub">Claude AI</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let stream = null;
+let facingMode = 'environment';
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goSplash() { stopStream(); showScreen('splash'); }
+function goCamera() { startCamera(); }
+function exitCamera() { stopStream(); showScreen('splash'); }
+
+function stopStream() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+
+async function startCamera() {
+  showScreen('camera');
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    });
+    document.getElementById('video').srcObject = stream;
+  } catch (err) {
+    toast('שגיאת מצלמה: ' + err.message);
+    showScreen('splash');
+  }
+}
+
+async function flipCamera() {
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  stopStream();
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: facingMode } },
+      audio: false
+    });
+    document.getElementById('video').srcObject = stream;
+  } catch (e) { toast('לא הצלחתי להחליף מצלמה'); }
+}
+
+async function capture() {
+  const video = document.getElementById('video');
+  if (!video.videoWidth) { toast('המצלמה עדיין נטענת...'); return; }
+  const canvas = document.getElementById('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const base64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+  showLoading(true);
+  try {
+    const result = await analyze(base64);
+    stopStream();
+    showLoading(false);
+    showResult(base64, result);
+  } catch (err) {
+    showLoading(false);
+    toast('שגיאה: ' + err.message);
+  }
+}
+
+async function analyze(imageBase64) {
+  const prompt = `נתח את האובייקט המרכזי בתמונה והערך:
+
+1. שם האובייקט בעברית
+2. אורך בס"מ (משוער)
+3. רוחב בס"מ (משוער)
+4. גובה/עובי בס"מ (משוער)
+5. משקל בגרמים (משוער)
+6. אם זה תמר/פרי/ירק — רמת בשלות מ-1 עד 10
+7. תיאור צבע ומראה
+8. רמת ביטחון (0-100%)
+
+החזר JSON בלבד:
+{
+  "object_name": "<שם בעברית>",
+  "object_emoji": "<אימוג'י>",
+  "object_type": "<קטגוריה: תמר/פרי/חפץ/וכו>",
+  "length_cm": <מספר>,
+  "width_cm": <מספר>,
+  "height_cm": <מספר>,
+  "weight_g": <מספר>,
+  "ripeness": <1-10 או null>,
+  "ripeness_label": "<תיאור הבשלות או null>",
+  "appearance": "<תיאור מראה>",
+  "notes": "<הערה או טיפ>",
+  "confidence": <0-100>
+}
+
+חשוב: אם אין סקלת ייחוס בתמונה, הערך לפי גודל אופייני. החזר JSON בלבד ללא טקסט נוסף.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error?.message || 'שגיאת API');
+  }
+
+  const data = await res.json();
+  const raw = data.content.map(b => b.text || '').join('');
+  const clean = raw.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+function showResult(imageBase64, d) {
+  document.getElementById('result-img').src = 'data:image/jpeg;base64,' + imageBase64;
+
+  const ripenessPct = d.ripeness ? ((d.ripeness - 1) / 9) * 100 : 0;
+
+  let html = `
+    <div class="object-name-card">
+      <div class="object-icon">${d.object_emoji || '📦'}</div>
+      <div class="object-name">${d.object_name || 'אובייקט'}</div>
+      <div class="object-desc">${d.object_type || ''}</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📏</div>
+        <div class="stat-label">אורך</div>
+        <div class="stat-value">${d.length_cm}</div>
+        <div class="stat-unit">סנטימטרים</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">↔️</div>
+        <div class="stat-label">רוחב</div>
+        <div class="stat-value">${d.width_cm}</div>
+        <div class="stat-unit">סנטימטרים</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📐</div>
+        <div class="stat-label">גובה / עובי</div>
+        <div class="stat-value">${d.height_cm}</div>
+        <div class="stat-unit">סנטימטרים</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚖️</div>
+        <div class="stat-label">משקל</div>
+        <div class="stat-value">${d.weight_g}</div>
+        <div class="stat-unit">גרמים</div>
+      </div>
+    </div>
+  `;
+
+  if (d.ripeness) {
+    html += `
+      <div class="ripeness-card">
+        <div class="ripeness-header">
+          <div class="ripeness-title">🌡️ רמת בשלות</div>
+          <div class="ripeness-score">${d.ripeness}/10</div>
+        </div>
+        <div class="ripeness-bar">
+          <div class="ripeness-marker" style="right: calc(${ripenessPct}% - 9px);"></div>
+        </div>
+        <div class="ripeness-labels">
+          <span>בוסר</span>
+          <span>בשל מאוד</span>
+        </div>
+        ${d.ripeness_label ? `<div class="ripeness-desc">${d.ripeness_label}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (d.appearance || d.notes) {
+    html += `
+      <div class="info-card">
+        ${d.appearance ? `<div class="info-card-title">👁️ מראה</div><div style="margin-bottom:8px">${d.appearance}</div>` : ''}
+        ${d.notes ? `<div class="info-card-title">💡 הערה</div><div>${d.notes}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (typeof d.confidence === 'number') {
+    html += `
+      <div class="confidence-row">
+        <div class="confidence-label">
+          <span>רמת ביטחון בהערכה</span>
+          <span>${d.confidence}%</span>
+        </div>
+        <div class="confidence-bar"><div class="confidence-fill" style="width:${d.confidence}%"></div></div>
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="action-row">
+      <button class="action-btn secondary" onclick="goSplash()">🏠 בית</button>
+      <button class="action-btn" onclick="goCamera()">📸 סריקה חדשה</button>
+    </div>
+  `;
+
+  document.getElementById('resultBody').innerHTML = html;
+  showScreen('result');
+}
+
+function showLoading(v) {
+  document.getElementById('loading-overlay').classList.toggle('show', v);
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>
